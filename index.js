@@ -2,10 +2,24 @@
 // Использует Groq API (100% бесплатно, без кредитной карты)
 
 export default async function handler(req, res) {
-  // CORS headers
-  res.setHeader('Access-Control-Allow-Origin', '*');
+  // CORS headers - разрешаем запросы с вашего сайта
+  const allowedOrigins = [
+    'https://bruce22crz.github.io',
+    'http://localhost:3000',
+    'http://localhost:5500',
+    'http://127.0.0.1:5500'
+  ];
+  
+  const origin = req.headers.origin;
+  if (allowedOrigins.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+  } else {
+    res.setHeader('Access-Control-Allow-Origin', '*'); // Fallback для всех
+  }
+  
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.setHeader('Access-Control-Max-Age', '86400');
 
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
@@ -71,7 +85,12 @@ export default async function handler(req, res) {
     const aiMessage = data.choices[0]?.message?.content || 'Извините, не могу ответить.';
 
     return res.status(200).json({
-      message: aiMessage,
+      content: [
+        {
+          type: 'text',
+          text: aiMessage
+        }
+      ],
       model: 'Llama 3.3 70B (Groq)'
     });
 
